@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "sumneko.lua",
+        "eamodio.gitlens",
+        "yzhang.markdown-all-in-one",
+        "streetsidesoftware.code-spell-checker"
+    ]
+}

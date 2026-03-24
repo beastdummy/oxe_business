@@ -1,0 +1,19 @@
+{
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.git": true
+    },
+    "[lua]": {
+      "editor.tabSize": 4,
+      "editor.formatOnSave": false
+    },
+    "[markdown]": {
+      "editor.wordWrap": "on"
+    }
+  }
