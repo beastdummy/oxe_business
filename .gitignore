@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+.cursor/
+.history/
+
+# Logs
+*.log
+
+# Node
+node_modules/
+dist/
+build/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# FiveM / temp
+.cache/
+.tmp/
+temp/
+
+# Environment
+.env
+.env.*
+
+# Archives
+*.zip
+*.rar
+*.7z
