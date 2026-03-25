@@ -18,12 +18,14 @@ shared_scripts {
 
 -- Client
 client_scripts {
+    'framework/init.lua',
     'client/main.lua',
     'client/ui.lua'
 }
 
 -- Server
 server_scripts {
+    'framework/init.lua',
     'server/database.lua',
     'server/main.lua'
 }
