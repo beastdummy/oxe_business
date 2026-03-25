@@ -1,36 +1,30 @@
 --[[
-    QBX (qbx_core) - Client Adapter (Skeleton)
-
-    Propósito:
-    - Punto de integración para funciones cliente específicas de QBX.
-    - Este archivo debe retornar una tabla (API) consumida por `framework/init.lua`.
-
-    Notas:
-    - Sin lógica de negocio aún.
-    - Aquí NO se registran eventos, ni threads, ni exports (por ahora).
+    QBX client adapter
+    Solo define la API cliente para qbx_core.
+    No meter lógica de negocio aquí.
 ]]
 
-local api = {
+OxeFramework = OxeFramework or {}
+OxeFramework.adapters = OxeFramework.adapters or {}
+OxeFramework.adapters.qbx = OxeFramework.adapters.qbx or {}
+
+OxeFramework.adapters.qbx.client = {
     framework = 'qbx',
     side = 'client',
+
+    GetPlayerData = function()
+        return nil
+    end,
+
+    GetJob = function()
+        return nil
+    end,
+
+    HasItem = function(_itemName, _amount)
+        return false
+    end,
+
+    Notify = function(_msg, _type)
+        return false
+    end
 }
-
--- Stubs (se implementarán en fases posteriores)
-function api.GetPlayerData()
-    error('[OXE] GetPlayerData (QBX client) aún no implementado')
-end
-
-function api.GetJob()
-    error('[OXE] GetJob (QBX client) aún no implementado')
-end
-
-function api.Notify(_msg, _type)
-    error('[OXE] Notify (QBX client) aún no implementado')
-end
-
-function api.HasItem(_itemName, _amount)
-    error('[OXE] HasItem (QBX client) aún no implementado')
-end
-
-return api
-

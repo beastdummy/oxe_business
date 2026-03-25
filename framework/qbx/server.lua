@@ -1,36 +1,30 @@
 --[[
-    QBX (qbx_core) - Server Adapter (Skeleton)
-
-    Propósito:
-    - Punto de integración para funciones servidor específicas de QBX.
-    - Este archivo debe retornar una tabla (API) consumida por `framework/init.lua`.
-
-    Notas:
-    - Sin lógica de negocio aún.
-    - Sin acceso a DB / inventarios / jobs todavía.
+    QBX server adapter
+    Solo define la API servidor para qbx_core.
+    No meter lógica de negocio aquí.
 ]]
 
-local api = {
+OxeFramework = OxeFramework or {}
+OxeFramework.adapters = OxeFramework.adapters or {}
+OxeFramework.adapters.qbx = OxeFramework.adapters.qbx or {}
+
+OxeFramework.adapters.qbx.server = {
     framework = 'qbx',
     side = 'server',
+
+    GetPlayerData = function(_source)
+        return nil
+    end,
+
+    GetJob = function(_source)
+        return nil
+    end,
+
+    HasItem = function(_source, _itemName, _amount)
+        return false
+    end,
+
+    Notify = function(_source, _msg, _type)
+        return false
+    end
 }
-
--- Stubs (se implementarán en fases posteriores)
-function api.GetPlayerData(_source)
-    error('[OXE] GetPlayerData (QBX server) aún no implementado')
-end
-
-function api.GetJob(_source)
-    error('[OXE] GetJob (QBX server) aún no implementado')
-end
-
-function api.HasItem(_source, _itemName, _amount)
-    error('[OXE] HasItem (QBX server) aún no implementado')
-end
-
-function api.Notify(_source, _msg, _type)
-    error('[OXE] Notify (QBX server) aún no implementado')
-end
-
-return api
-

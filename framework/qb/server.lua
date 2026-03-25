@@ -3,34 +3,36 @@
 
     Propósito:
     - Punto de integración para funciones servidor específicas de qb-core.
-    - Este archivo debe retornar una tabla (API) consumida por `framework/init.lua`.
+    - Este archivo registra un adapter en `OxeFramework.adapters`.
 
     Notas:
     - Sin lógica de negocio aún.
     - Aquí luego agregaremos wrappers para inventario, jobs, money, etc.
 ]]
 
-local api = {
+OxeFramework = OxeFramework or {}
+OxeFramework.adapters = OxeFramework.adapters or {}
+OxeFramework.adapters.qb = OxeFramework.adapters.qb or {}
+
+OxeFramework.adapters.qb.server = {
     framework = 'qb',
     side = 'server',
+
+    -- Stubs seguros (se implementarán en fases posteriores)
+    GetPlayerData = function(_source, ...)
+        return nil
+    end,
+
+    GetJob = function(_source, ...)
+        return nil
+    end,
+
+    HasItem = function(_source, _itemName, _amount)
+        return false
+    end,
+
+    Notify = function(_source, _msg, _type)
+        return false
+    end
 }
-
--- Stubs (se implementarán en fases posteriores)
-function api.GetPlayerData(_source)
-    error('[OXE] GetPlayerData (QB server) aún no implementado')
-end
-
-function api.GetJob(_source)
-    error('[OXE] GetJob (QB server) aún no implementado')
-end
-
-function api.HasItem(_source, _itemName, _amount)
-    error('[OXE] HasItem (QB server) aún no implementado')
-end
-
-function api.Notify(_source, _msg, _type)
-    error('[OXE] Notify (QB server) aún no implementado')
-end
-
-return api
 

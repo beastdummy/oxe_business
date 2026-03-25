@@ -3,34 +3,36 @@
 
     Propósito:
     - Punto de integración para funciones cliente específicas de ESX.
-    - Este archivo debe retornar una tabla (API) consumida por `framework/init.lua`.
+    - Este archivo registra un adapter en `OxeFramework.adapters`.
 
     Notas:
     - Sin lógica de negocio aún.
     - En fases siguientes, aquí se mapeará la obtención de playerData y notificaciones.
 ]]
 
-local api = {
+OxeFramework = OxeFramework or {}
+OxeFramework.adapters = OxeFramework.adapters or {}
+OxeFramework.adapters.esx = OxeFramework.adapters.esx or {}
+
+OxeFramework.adapters.esx.client = {
     framework = 'esx',
     side = 'client',
+
+    -- Stubs seguros (se implementarán en fases posteriores)
+    GetPlayerData = function(...)
+        return nil
+    end,
+
+    GetJob = function(...)
+        return nil
+    end,
+
+    HasItem = function(_itemName, _amount)
+        return false
+    end,
+
+    Notify = function(_msg, _type)
+        return false
+    end
 }
-
--- Stubs (se implementarán en fases posteriores)
-function api.GetPlayerData()
-    error('[OXE] GetPlayerData (ESX client) aún no implementado')
-end
-
-function api.GetJob()
-    error('[OXE] GetJob (ESX client) aún no implementado')
-end
-
-function api.Notify(_msg, _type)
-    error('[OXE] Notify (ESX client) aún no implementado')
-end
-
-function api.HasItem(_itemName, _amount)
-    error('[OXE] HasItem (ESX client) aún no implementado')
-end
-
-return api
 

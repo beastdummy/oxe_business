@@ -1,133 +1,112 @@
 --[[
-    OXE Business - Framework Loader
+    oxe_business - Framework bootstrap
 
-    Propósito:
-    - Detectar el framework activo (QBX / QB / ESX / OX) de forma simple y estable.
-    - Cargar el módulo correspondiente (client.lua o server.lua) sin usar `require`,
-      usando un patrón compatible con FiveM: LoadResourceFile + load().
+    Este archivo:
+    - detecta el framework activo
+    - expone metadatos comunes
+    - selecciona el adapter correcto ya cargado por fxmanifest
 
-    Importante:
-    - Este archivo NO implementa lógica de negocio.
-    - Solo resuelve "qué framework está activo" y expone un API consistente.
-
-    Reglas de arquitectura (OXE):
-    - Los adapters viven en `framework/<fw>/{client,server}.lua`.
-    - Cada adapter debe RETORNAR una tabla `api` (sin registrar lógica avanzada aún).
-    - Este archivo debe ser fácil de leer y mantener: sin magia y sin sobreingeniería.
+    NO:
+    - carga archivos manualmente
+    - implementa lógica de negocio
+    - contiene wrappers complejos todavía
 ]]
 
-OXE = OXE or {}
+OxeFramework = OxeFramework or {}
+OxeFramework.adapters = OxeFramework.adapters or {}
+OxeFramework.api = OxeFramework.api or {}
 
-local CURRENT_RESOURCE = GetCurrentResourceName()
 local IS_SERVER = IsDuplicityVersion()
 
-local function isResourceStarted(resourceName)
-    if type(resourceName) ~= 'string' or resourceName == '' then return false end
-    return GetResourceState(resourceName) == 'started'
-end
-
--- Orden de detección. Si hay más de uno iniciado, gana el primero.
 local DETECTION_ORDER = {
     { name = 'qbx', resource = 'qbx_core' },
-    { name = 'qb',  resource = 'qb-core' },
+    { name = 'qb', resource = 'qb-core' },
     { name = 'esx', resource = 'es_extended' },
-    { name = 'ox',  resource = 'ox_core' },
+    { name = 'ox', resource = 'ox_core' }
 }
 
+local function isStarted(resourceName)
+    return type(resourceName) == 'string' and GetResourceState(resourceName) == 'started'
+end
+
 local function detectFramework()
-    for _, fw in ipairs(DETECTION_ORDER) do
-        if isResourceStarted(fw.resource) then
-            return fw.name, fw.resource
+    for i = 1, #DETECTION_ORDER do
+        local entry = DETECTION_ORDER[i]
+        if isStarted(entry.resource) then
+            return entry.name, entry.resource
         end
     end
+
     return nil, nil
 end
 
-local function debugEnabled()
-    return type(Config) == 'table' and Config.Debug == true
+local function debugWarn(message)
+    if Config and Config.Debug then
+        print(('[oxe_business] WARNING: %s'):format(message))
+    end
 end
 
-local function debugWarn(msg)
-    if not debugEnabled() then return end
-    print(('[OXE] ^3WARNING^7 %s'):format(msg))
-end
+local frameworkName, frameworkResource = detectFramework()
+local side = IS_SERVER and 'server' or 'client'
 
-local function loadFrameworkModule(frameworkName)
-    local side = IS_SERVER and 'server' or 'client'
-    local relativePath = ('framework/%s/%s.lua'):format(frameworkName, side)
-    local source = LoadResourceFile(CURRENT_RESOURCE, relativePath)
+OxeFramework.name = frameworkName
+OxeFramework.resource = frameworkResource
+OxeFramework.side = side
 
-    if not source or source == '' then return nil, ('no_file:%s'):format(relativePath) end
+local function createSafeApi()
+    return {
+        framework = frameworkName or 'none',
+        side = side,
+        isFallback = true,
 
-    -- Entorno aislado (pero con fallback a _G) para evitar fugas accidentales.
-    local env = setmetatable({
-        OXE = OXE,
-        exports = exports,
-    }, { __index = _G })
+        GetPlayerData = function(...)
+            return nil
+        end,
 
-    local chunk, err = load(source, ('@@%s/%s'):format(CURRENT_RESOURCE, relativePath), 't', env)
-    if not chunk then return nil, ('compile_error:%s:%s'):format(relativePath, err or 'unknown') end
+        GetJob = function(...)
+            return nil
+        end,
 
-    local ok, result = pcall(chunk)
-    if not ok then return nil, ('runtime_error:%s:%s'):format(relativePath, result or 'unknown') end
+        HasItem = function(...)
+            return false
+        end,
 
-    -- Convención: el módulo devuelve una tabla con el API del framework.
-    if type(result) ~= 'table' then return nil, ('bad_return:%s'):format(relativePath) end
-
-    return result, nil
-end
-
-local fwName, fwResource = detectFramework()
-
-local function createSafeApi(selectedFrameworkName)
-    local api = {
-        framework = selectedFrameworkName or 'none',
-        side = IS_SERVER and 'server' or 'client',
-        isStub = true,
-    }
-
-    local function notReady(fnName)
-        return function()
-            error(('[OXE] Framework API "%s" no está disponible (framework=%s, side=%s).'):format(
-                fnName,
-                api.framework,
-                api.side
-            ))
+        Notify = function(...)
+            return false
         end
+    }
+end
+
+local function normalizeApi(api)
+    local safe = createSafeApi()
+
+    if type(api) ~= 'table' then
+        return safe
     end
 
-    -- Stubs base para crecer en el futuro (sin lógica avanzada por ahora).
-    api.GetPlayerData = notReady('GetPlayerData')
-    api.HasItem = notReady('HasItem')
-    api.Notify = notReady('Notify')
-    api.GetJob = notReady('GetJob')
+    -- Asegurar API uniforme con fallback seguro.
+    api.framework = api.framework or safe.framework
+    api.side = api.side or safe.side
+    api.isFallback = api.isFallback or false
+
+    api.GetPlayerData = type(api.GetPlayerData) == 'function' and api.GetPlayerData or safe.GetPlayerData
+    api.GetJob = type(api.GetJob) == 'function' and api.GetJob or safe.GetJob
+    api.HasItem = type(api.HasItem) == 'function' and api.HasItem or safe.HasItem
+    api.Notify = type(api.Notify) == 'function' and api.Notify or safe.Notify
 
     return api
 end
 
-OXE.Framework = {
-    -- Nombre del módulo seleccionado: 'qbx' | 'qb' | 'esx' | 'ox' | nil
-    name = fwName,
-    -- Nombre del resource detectado: 'qbx_core' | 'qb-core' | 'es_extended' | 'ox_core' | nil
-    resource = fwResource,
-    -- Side actual
-    side = IS_SERVER and 'server' or 'client',
-    -- API del framework (tabla retornada por el módulo)
-    api = nil,
-}
-
-if fwName then
-    local api, loadErr = loadFrameworkModule(fwName)
-    if api then
-        OXE.Framework.api = api
-    else
-        debugWarn(('Adapter no pudo cargarse (%s). Se usará API segura (stubs).'):format(loadErr or 'unknown'))
-        OXE.Framework.api = createSafeApi(fwName)
-    end
+if not frameworkName then
+    debugWarn('No framework detected. Using safe fallback API.')
+    OxeFramework.api = normalizeApi(nil)
 else
-    -- Sin framework detectado: dejamos un API vacío para no romper el resource.
-    -- Más adelante podemos decidir: error hard, fallback, o modo standalone.
-    debugWarn('No se detectó framework (qbx_core/qb-core/es_extended/ox_core). Se usará API segura (stubs).')
-    OXE.Framework.api = createSafeApi(nil)
-end
+    local adapterGroup = OxeFramework.adapters[frameworkName]
 
+    if adapterGroup and type(adapterGroup[side]) == 'table' then
+        OxeFramework.api = normalizeApi(adapterGroup[side])
+    else
+        debugWarn(('Framework "%s" detected but no %s adapter was registered. Using safe fallback API.'):format(frameworkName, side))
+        OxeFramework.api = normalizeApi(nil)
+    end
+end

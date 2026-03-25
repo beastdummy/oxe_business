@@ -8,33 +8,33 @@ author 'OXE'
 
 lua54 'yes'
 
--- Shared
 shared_scripts {
-    '@ox_lib/init.lua', -- opcional pero recomendado si lo vas a usar
+    '@ox_lib/init.lua',
     'shared/constants.lua',
     'shared/config.lua',
     'shared/schema.lua'
 }
 
--- Client
 client_scripts {
+    'framework/qbx/client.lua',
+    'framework/qb/client.lua',
+    'framework/esx/client.lua',
+    'framework/ox/client.lua',
     'framework/init.lua',
     'client/main.lua',
     'client/ui.lua'
 }
 
--- Server
 server_scripts {
+    'framework/qbx/server.lua',
+    'framework/qb/server.lua',
+    'framework/esx/server.lua',
+    'framework/ox/server.lua',
     'framework/init.lua',
     'server/database.lua',
     'server/main.lua'
 }
 
--- Locales (traducciones)
 files {
     'locales/*.json'
 }
-
--- Export opcional (lo usaremos más adelante)
--- exports {}
--- server_exports {}

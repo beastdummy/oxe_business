@@ -3,34 +3,36 @@
 
     Propósito:
     - Punto de integración para funciones servidor específicas de ox_core.
-    - Este archivo debe retornar una tabla (API) consumida por `framework/init.lua`.
+    - Este archivo registra un adapter en `OxeFramework.adapters`.
 
     Notas:
     - Sin lógica de negocio aún.
     - En fases siguientes, aquí se mapearán inventario, grupos, permisos, etc.
 ]]
 
-local api = {
+OxeFramework = OxeFramework or {}
+OxeFramework.adapters = OxeFramework.adapters or {}
+OxeFramework.adapters.ox = OxeFramework.adapters.ox or {}
+
+OxeFramework.adapters.ox.server = {
     framework = 'ox',
     side = 'server',
+
+    -- Stubs seguros (se implementarán en fases posteriores)
+    GetPlayerData = function(_source, ...)
+        return nil
+    end,
+
+    GetJob = function(_source, ...)
+        return nil
+    end,
+
+    HasItem = function(_source, _itemName, _amount)
+        return false
+    end,
+
+    Notify = function(_source, _msg, _type)
+        return false
+    end
 }
-
--- Stubs (se implementarán en fases posteriores)
-function api.GetPlayerData(_source)
-    error('[OXE] GetPlayerData (OX server) aún no implementado')
-end
-
-function api.GetJob(_source)
-    error('[OXE] GetJob (OX server) aún no implementado')
-end
-
-function api.HasItem(_source, _itemName, _amount)
-    error('[OXE] HasItem (OX server) aún no implementado')
-end
-
-function api.Notify(_source, _msg, _type)
-    error('[OXE] Notify (OX server) aún no implementado')
-end
-
-return api
 
